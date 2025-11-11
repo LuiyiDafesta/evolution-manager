@@ -439,20 +439,20 @@ export default function InstanceSettings() {
                       {availableEvents
                         .filter((e) => e !== "ALL")
                         .map((event) => (
-                          <label
-                            key={event}
-                            className="flex items-center gap-2 text-sm cursor-pointer hover:bg-accent p-2 rounded"
-                          >
-                            <input
-                              type="checkbox"
+                        <label
+                          key={event}
+                          className="flex items-center gap-2 text-sm cursor-pointer hover:bg-accent p-2 rounded"
+                        >
+                          <input
+                            type="checkbox"
                               checked={
                                 selectedEvents.includes(event) ||
                                 selectedEvents.includes("ALL")
                               }
-                              onChange={() => toggleEvent(event)}
+                            onChange={() => toggleEvent(event)}
                               disabled={selectedEvents.includes("ALL")}
-                              className="rounded border-input"
-                            />
+                            className="rounded border-input"
+                          />
                             <span
                               className={
                                 selectedEvents.includes("ALL")
@@ -460,10 +460,10 @@ export default function InstanceSettings() {
                                   : "text-foreground"
                               }
                             >
-                              {event}
-                            </span>
-                          </label>
-                        ))}
+                            {event}
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </div>
                 </div>
