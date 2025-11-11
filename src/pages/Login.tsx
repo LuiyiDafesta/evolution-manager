@@ -27,21 +27,21 @@ export const Login: React.FC = () => {
   const currentUrl = window.location.origin;
 
   // Schema de validação para login
-  const loginSchema = z.object({
-    apiUrl: z
-      .string()
+const loginSchema = z.object({
+  apiUrl: z
+    .string()
       .min(1, { message: 'URL da API é obrigatória' })
       .url({ message: `URL inválida. Use o formato: ${currentUrl}` })
-      .refine((url) => url.startsWith('http://') || url.startsWith('https://'), {
-        message: 'URL deve começar com http:// ou https://',
-      }),
-    apiKey: z
-      .string()
+    .refine((url) => url.startsWith('http://') || url.startsWith('https://'), {
+      message: 'URL deve começar com http:// ou https://',
+    }),
+  apiKey: z
+    .string()
       .min(1, { message: 'API Key é obrigatória' })
       .min(10, { message: 'API Key deve ter pelo menos 10 caracteres' }),
-  });
+});
 
-  type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>;
 
   // Formulário de login
   const loginForm = useForm<LoginFormData>({

@@ -33,13 +33,13 @@ function App() {
             {/* Manager Protected Routes */}
             {isAuthenticated ? (
               <Route path="/manager" element={<Layout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="instances" element={<Instances />} />
-                <Route path="instances/:instanceId/settings" element={<InstanceSettings />} />
-                <Route path="messages" element={<Messages />} />
-                <Route path="events" element={<Events />} />
-                <Route path="settings" element={<Settings />} />
-              </Route>
+              <Route index element={<Dashboard />} />
+              <Route path="instances" element={<Instances />} />
+              <Route path="instances/:instanceId/settings" element={<InstanceSettings />} />
+              <Route path="messages" element={<Messages />} />
+              <Route path="events" element={<Events />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
             ) : (
               /* Redirect to login if not authenticated */
               <Route path="/manager/*" element={<Navigate to="/manager/login" replace />} />

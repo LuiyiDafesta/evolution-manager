@@ -1,16 +1,16 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Trash2, Power } from 'lucide-react';
-import { Button } from '@evoapi/design-system';
-import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import * as instancesApi from '@/services/api/instances';
-import type { Instance } from '@/types/instance';
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Save, Trash2, Power, Eye, EyeOff } from "lucide-react";
+import { Button } from "@evoapi/design-system";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import * as instancesApi from "@/services/api/instances";
+import type { Instance } from "@/types/instance";
 
 const webhookSchema = z.object({
-  webhookUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  webhookUrl: z.string().url("URL inválida").optional().or(z.literal("")),
   subscribe: z.array(z.string()).optional(),
   rabbitmqEnable: z.string().optional(),
   websocketEnable: z.string().optional(),
@@ -29,19 +29,19 @@ type WebhookFormData = z.infer<typeof webhookSchema>;
 type AdvancedFormData = z.infer<typeof advancedSchema>;
 
 const availableEvents = [
-  'ALL',
-  'MESSAGE',
-  'READ_RECEIPT',
-  'PRESENCE',
-  'HISTORY_SYNC',
-  'CHAT_PRESENCE',
-  'CALL',
-  'CONNECTION',
-  'QRCODE',
-  'LABEL',
-  'CONTACT',
-  'GROUP',
-  'NEWSLETTER',
+  "ALL",
+  "MESSAGE",
+  "READ_RECEIPT",
+  "PRESENCE",
+  "HISTORY_SYNC",
+  "CHAT_PRESENCE",
+  "CALL",
+  "CONNECTION",
+  "QRCODE",
+  "LABEL",
+  "CONTACT",
+  "GROUP",
+  "NEWSLETTER",
 ];
 
 export default function InstanceSettings() {
@@ -51,6 +51,7 @@ export default function InstanceSettings() {
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showToken, setShowToken] = useState(false);
   const isInitialized = useRef(false);
   const hasFetchedOnce = useRef(false);
 
@@ -83,8 +84,8 @@ export default function InstanceSettings() {
         const instanceData = await instancesApi.fetchInstance(instanceId);
         setInstance(instanceData);
       } catch (error) {
-        console.error('Erro ao buscar instância:', error);
-        toast.error('Erro ao carregar dados da instância');
+        console.error("Erro ao buscar instância:", error);
+        toast.error("Erro ao carregar dados da instância");
       } finally {
         setIsLoading(false);
       }
@@ -99,10 +100,10 @@ export default function InstanceSettings() {
 
     // Populate webhook form
     resetWebhook({
-      webhookUrl: instance.webhook || '',
-      rabbitmqEnable: instance.rabbitmqEnable || '',
-      websocketEnable: instance.websocketEnable || '',
-      natsEnable: instance.natsEnable || '',
+      webhookUrl: instance.webhook || "",
+      rabbitmqEnable: instance.rabbitmqEnable || "",
+      websocketEnable: instance.websocketEnable || "",
+      natsEnable: instance.natsEnable || "",
     });
 
     // Populate advanced settings form
@@ -116,7 +117,10 @@ export default function InstanceSettings() {
 
     // Parse events string to array (e.g., "MESSAGE,QRCODE,CONNECTION" -> ["MESSAGE", "QRCODE", "CONNECTION"])
     if (instance.events) {
-      const eventsArray = instance.events.split(',').map(e => e.trim()).filter(Boolean);
+      const eventsArray = instance.events
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean);
       setSelectedEvents(eventsArray);
     } else {
       setSelectedEvents([]);
@@ -126,20 +130,20 @@ export default function InstanceSettings() {
   }, [instance, resetWebhook, resetAdvanced]);
 
   const toggleEvent = (event: string) => {
-    setSelectedEvents(prev => {
-      if (event === 'ALL') {
-        if (prev.includes('ALL')) {
+    setSelectedEvents((prev) => {
+      if (event === "ALL") {
+        if (prev.includes("ALL")) {
           return [];
         }
-        return ['ALL'];
+        return ["ALL"];
       }
 
-      if (prev.includes('ALL')) {
+      if (prev.includes("ALL")) {
         return [event];
       }
 
       if (prev.includes(event)) {
-        return prev.filter(e => e !== event);
+        return prev.filter((e) => e !== event);
       }
       return [...prev, event];
     });
@@ -147,29 +151,31 @@ export default function InstanceSettings() {
 
   const onSubmitWebhook = async (data: WebhookFormData) => {
     if (!instance?.apikey || !instanceId) {
-      toast.error('Token da instância não encontrado');
+      toast.error("Token da instância não encontrado");
       return;
     }
 
     try {
       setIsSaving(true);
       const config = {
-        webhookUrl: data.webhookUrl || '',
+        webhookUrl: data.webhookUrl || "",
         subscribe: selectedEvents,
-        rabbitmqEnable: data.rabbitmqEnable || '',
-        websocketEnable: data.websocketEnable || '',
-        natsEnable: data.natsEnable || '',
+        rabbitmqEnable: data.rabbitmqEnable || "",
+        websocketEnable: data.websocketEnable || "",
+        natsEnable: data.natsEnable || "",
       };
 
       await instancesApi.connectInstance(instance.apikey, config);
-      toast.success('Configurações de webhook atualizadas!');
+      toast.success("Configurações de webhook atualizadas!");
 
       // Refetch instance data
       const updatedInstance = await instancesApi.fetchInstance(instanceId);
       setInstance(updatedInstance);
     } catch (error) {
-      console.error('Erro ao atualizar webhook:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar webhook');
+      console.error("Erro ao atualizar webhook:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao atualizar webhook"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -177,21 +183,29 @@ export default function InstanceSettings() {
 
   const onSubmitAdvanced = async (data: AdvancedFormData) => {
     if (!instance?.apikey || !instance?.id || !instanceId) {
-      toast.error('Token da instância não encontrado');
+      toast.error("Token da instância não encontrado");
       return;
     }
 
     try {
       setIsSaving(true);
-      await instancesApi.updateAdvancedSettings(instance.id, instance.apikey, data);
-      toast.success('Configurações avançadas atualizadas!');
+      await instancesApi.updateAdvancedSettings(
+        instance.id,
+        instance.apikey,
+        data
+      );
+      toast.success("Configurações avançadas atualizadas!");
 
       // Refetch instance data
       const updatedInstance = await instancesApi.fetchInstance(instanceId);
       setInstance(updatedInstance);
     } catch (error) {
-      console.error('Erro ao atualizar configurações:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar configurações');
+      console.error("Erro ao atualizar configurações:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Erro ao atualizar configurações"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -199,7 +213,7 @@ export default function InstanceSettings() {
 
   const handleDisconnect = async () => {
     if (!instance?.apikey || !instanceId) {
-      toast.error('Token da instância não encontrado');
+      toast.error("Token da instância não encontrado");
       return;
     }
 
@@ -213,14 +227,16 @@ export default function InstanceSettings() {
 
       toast.success(`${instance.instanceName} desconectada!`);
     } catch (error) {
-      console.error('Erro ao desconectar instância:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao desconectar instância');
+      console.error("Erro ao desconectar instância:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao desconectar instância"
+      );
     }
   };
 
   const handleDelete = async () => {
     if (!instance?.id) {
-      toast.error('ID da instância não encontrado');
+      toast.error("ID da instância não encontrado");
       return;
     }
 
@@ -234,10 +250,12 @@ export default function InstanceSettings() {
       toast.info(`Deletando ${instance.instanceName}...`);
       await instancesApi.deleteInstance(instance.id);
       toast.success(`${instance.instanceName} deletada!`);
-      navigate('/manager/instances');
+      navigate("/manager/instances");
     } catch (error) {
-      console.error('Erro ao deletar instância:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao deletar instância');
+      console.error("Erro ao deletar instância:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao deletar instância"
+      );
     }
   };
 
@@ -261,7 +279,7 @@ export default function InstanceSettings() {
           <p className="text-muted-foreground mb-4">
             A instância "{instanceId}" não foi encontrada.
           </p>
-          <Button onClick={() => navigate('/manager/instances')}>
+          <Button onClick={() => navigate("/manager/instances")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar para Instâncias
           </Button>
@@ -279,7 +297,7 @@ export default function InstanceSettings() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/manager/instances')}
+              onClick={() => navigate("/manager/instances")}
               className="text-sidebar-foreground hover:bg-sidebar-accent"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -316,10 +334,28 @@ export default function InstanceSettings() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground">
+                    Token da Instância
+                  </label>
+                  <div className="mt-1 flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground font-mono">
+                      {showToken ? (instance.apikey || '') : '•'.repeat((instance.apikey || '').length)}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowToken(!showToken)}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      title={showToken ? "Ocultar token" : "Mostrar token"}
+                    >
+                      {showToken ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
                     Status
                   </label>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {instance.status === 'open' ? 'Conectado' : 'Desconectado'}
+                    {instance.status === "open" ? "Conectado" : "Desconectado"}
                   </p>
                 </div>
                 {instance.owner && (
@@ -364,7 +400,7 @@ export default function InstanceSettings() {
                     id="webhookUrl"
                     type="url"
                     placeholder="https://seu-servidor.com/webhook"
-                    {...registerWebhook('webhookUrl')}
+                    {...registerWebhook("webhookUrl")}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   {webhookErrors.webhookUrl && (
@@ -388,33 +424,46 @@ export default function InstanceSettings() {
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={selectedEvents.includes('ALL')}
-                          onChange={() => toggleEvent('ALL')}
+                          checked={selectedEvents.includes("ALL")}
+                          onChange={() => toggleEvent("ALL")}
                           className="rounded border-input w-4 h-4"
                         />
-                        <span className="text-sm font-semibold text-primary">ALL</span>
+                        <span className="text-sm font-semibold text-primary">
+                          ALL
+                        </span>
                       </label>
                     </div>
 
                     {/* Individual Events */}
                     <div className="grid grid-cols-2 gap-2">
-                      {availableEvents.filter(e => e !== 'ALL').map((event) => (
-                        <label
-                          key={event}
-                          className="flex items-center gap-2 text-sm cursor-pointer hover:bg-accent p-2 rounded"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedEvents.includes(event) || selectedEvents.includes('ALL')}
-                            onChange={() => toggleEvent(event)}
-                            disabled={selectedEvents.includes('ALL')}
-                            className="rounded border-input"
-                          />
-                          <span className={selectedEvents.includes('ALL') ? 'text-muted-foreground' : 'text-foreground'}>
-                            {event}
-                          </span>
-                        </label>
-                      ))}
+                      {availableEvents
+                        .filter((e) => e !== "ALL")
+                        .map((event) => (
+                          <label
+                            key={event}
+                            className="flex items-center gap-2 text-sm cursor-pointer hover:bg-accent p-2 rounded"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={
+                                selectedEvents.includes(event) ||
+                                selectedEvents.includes("ALL")
+                              }
+                              onChange={() => toggleEvent(event)}
+                              disabled={selectedEvents.includes("ALL")}
+                              className="rounded border-input"
+                            />
+                            <span
+                              className={
+                                selectedEvents.includes("ALL")
+                                  ? "text-muted-foreground"
+                                  : "text-foreground"
+                              }
+                            >
+                              {event}
+                            </span>
+                          </label>
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -422,12 +471,15 @@ export default function InstanceSettings() {
                 {/* Event Producers */}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label htmlFor="rabbitmqEnable" className="block text-sm font-medium text-foreground mb-1">
+                    <label
+                      htmlFor="rabbitmqEnable"
+                      className="block text-sm font-medium text-foreground mb-1"
+                    >
                       RabbitMQ
                     </label>
                     <select
                       id="rabbitmqEnable"
-                      {...registerWebhook('rabbitmqEnable')}
+                      {...registerWebhook("rabbitmqEnable")}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">Padrão</option>
@@ -437,12 +489,15 @@ export default function InstanceSettings() {
                   </div>
 
                   <div>
-                    <label htmlFor="websocketEnable" className="block text-sm font-medium text-foreground mb-1">
+                    <label
+                      htmlFor="websocketEnable"
+                      className="block text-sm font-medium text-foreground mb-1"
+                    >
                       WebSocket
                     </label>
                     <select
                       id="websocketEnable"
-                      {...registerWebhook('websocketEnable')}
+                      {...registerWebhook("websocketEnable")}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">Padrão</option>
@@ -452,12 +507,15 @@ export default function InstanceSettings() {
                   </div>
 
                   <div>
-                    <label htmlFor="natsEnable" className="block text-sm font-medium text-foreground mb-1">
+                    <label
+                      htmlFor="natsEnable"
+                      className="block text-sm font-medium text-foreground mb-1"
+                    >
                       NATS
                     </label>
                     <select
                       id="natsEnable"
-                      {...registerWebhook('natsEnable')}
+                      {...registerWebhook("natsEnable")}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">Padrão</option>
@@ -470,7 +528,7 @@ export default function InstanceSettings() {
                 <div className="flex justify-end">
                   <Button type="submit" disabled={isSaving} className="gap-2">
                     <Save className="h-4 w-4" />
-                    {isSaving ? 'Salvando...' : 'Salvar Webhook'}
+                    {isSaving ? "Salvando..." : "Salvar Webhook"}
                   </Button>
                 </div>
               </div>
@@ -486,7 +544,10 @@ export default function InstanceSettings() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label htmlFor="alwaysOnline" className="text-sm font-medium text-foreground cursor-pointer">
+                    <label
+                      htmlFor="alwaysOnline"
+                      className="text-sm font-medium text-foreground cursor-pointer"
+                    >
                       Always Online
                     </label>
                     <p className="text-xs text-muted-foreground">
@@ -496,14 +557,17 @@ export default function InstanceSettings() {
                   <input
                     id="alwaysOnline"
                     type="checkbox"
-                    {...registerAdvanced('alwaysOnline')}
+                    {...registerAdvanced("alwaysOnline")}
                     className="rounded border-input w-4 h-4"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <label htmlFor="rejectCall" className="text-sm font-medium text-foreground cursor-pointer">
+                    <label
+                      htmlFor="rejectCall"
+                      className="text-sm font-medium text-foreground cursor-pointer"
+                    >
                       Reject Call
                     </label>
                     <p className="text-xs text-muted-foreground">
@@ -513,14 +577,17 @@ export default function InstanceSettings() {
                   <input
                     id="rejectCall"
                     type="checkbox"
-                    {...registerAdvanced('rejectCall')}
+                    {...registerAdvanced("rejectCall")}
                     className="rounded border-input w-4 h-4"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <label htmlFor="readMessages" className="text-sm font-medium text-foreground cursor-pointer">
+                    <label
+                      htmlFor="readMessages"
+                      className="text-sm font-medium text-foreground cursor-pointer"
+                    >
                       Read Messages
                     </label>
                     <p className="text-xs text-muted-foreground">
@@ -530,14 +597,17 @@ export default function InstanceSettings() {
                   <input
                     id="readMessages"
                     type="checkbox"
-                    {...registerAdvanced('readMessages')}
+                    {...registerAdvanced("readMessages")}
                     className="rounded border-input w-4 h-4"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <label htmlFor="ignoreGroups" className="text-sm font-medium text-foreground cursor-pointer">
+                    <label
+                      htmlFor="ignoreGroups"
+                      className="text-sm font-medium text-foreground cursor-pointer"
+                    >
                       Ignore Groups
                     </label>
                     <p className="text-xs text-muted-foreground">
@@ -547,14 +617,17 @@ export default function InstanceSettings() {
                   <input
                     id="ignoreGroups"
                     type="checkbox"
-                    {...registerAdvanced('ignoreGroups')}
+                    {...registerAdvanced("ignoreGroups")}
                     className="rounded border-input w-4 h-4"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <label htmlFor="ignoreStatus" className="text-sm font-medium text-foreground cursor-pointer">
+                    <label
+                      htmlFor="ignoreStatus"
+                      className="text-sm font-medium text-foreground cursor-pointer"
+                    >
                       Ignore Status
                     </label>
                     <p className="text-xs text-muted-foreground">
@@ -564,7 +637,7 @@ export default function InstanceSettings() {
                   <input
                     id="ignoreStatus"
                     type="checkbox"
-                    {...registerAdvanced('ignoreStatus')}
+                    {...registerAdvanced("ignoreStatus")}
                     className="rounded border-input w-4 h-4"
                   />
                 </div>
@@ -572,7 +645,7 @@ export default function InstanceSettings() {
                 <div className="flex justify-end">
                   <Button type="submit" disabled={isSaving} className="gap-2">
                     <Save className="h-4 w-4" />
-                    {isSaving ? 'Salvando...' : 'Salvar Avançadas'}
+                    {isSaving ? "Salvando..." : "Salvar Avançadas"}
                   </Button>
                 </div>
               </div>
