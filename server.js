@@ -12,7 +12,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Manejar SPA (Single Page Application) - redirigir todo a index.html
-app.get('*', (req, res) => {
+// Manejar SPA (Single Page Application) - redirigir todo a index.html
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
